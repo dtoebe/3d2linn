@@ -29,10 +29,14 @@ func formatHWI(data [][]string) [][]string {
 	return rows
 }
 
-func parseHidden(data [][]string) [][]string {
+func parseHidden(data [][]string, isHidden bool) [][]string {
 	hidden := [][]string{}
+	hiddenString := "1"
+	if !isHidden {
+		hiddenString = "0"
+	}
 	for i := 0; i < len(data); i++ {
-		if data[i][48] == "1" {
+		if data[i][48] == hiddenString {
 			hidden = append(hidden, data[i])
 		}
 	}
@@ -46,7 +50,7 @@ func getHidden(inp, out string, t string) {
 		var hiddenRows [][]string
 		if !checkFileExist(out) {
 			rawData := getRawData(inp)
-			hiddenData := parseHidden(rawData)
+			hiddenData := parseHidden(rawData, true)
 			switch t {
 			case "hidden":
 				header = []string{"ID", "Name", "Inventory", "Cost", "Price", "Sale Price", "Is On Sale", "Date Created"}

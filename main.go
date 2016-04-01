@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 )
 
 func checkFileExist(file string) bool {
@@ -15,6 +16,7 @@ func checkFileExist(file string) bool {
 }
 
 func main() {
+	start := time.Now()
 	var hidden bool
 	var hwi bool
 	var inv bool
@@ -34,6 +36,9 @@ func main() {
 	case linn:
 		if flag.NArg() > 3 {
 			createLinnCSV(flag.Arg(0), flag.Arg(1), flag.Arg(2), flag.Arg(3))
+			elapsed := time.Since(start)
+			fmt.Printf("Ran in %s\n", elapsed)
+
 			os.Exit(0)
 		}
 	case inv:
@@ -41,6 +46,9 @@ func main() {
 			lowInv, err := strconv.Atoi(flag.Arg(2))
 			if err != nil {
 				fmt.Println(err)
+				elapsed := time.Since(start)
+				fmt.Printf("Ran in %s\n", elapsed)
+
 				os.Exit(1)
 			}
 			getLowInv(flag.Arg(0), flag.Arg(1), lowInv)
@@ -65,4 +73,6 @@ func main() {
 		}
 		os.Exit(0)
 	}
+	elapsed := time.Since(start)
+	fmt.Printf("Ran in %s\n", elapsed)
 }

@@ -6,6 +6,34 @@ import (
 	"os"
 )
 
+func writeToTxt(data []string, path string) {
+	var file *os.File
+	var err error
+	if checkFileExist(path) {
+		file, err = os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
+		if err != nil {
+			fmt.Printf("[ERR] Unable to open %s: %v\n", path, err)
+			os.Exit(1)
+		}
+	} else {
+		file, err = os.Create(path)
+		if err != nil {
+			fmt.Printf("[ERR] Unable to create %s: %v", path, err)
+			os.Exit(1)
+		}
+	}
+	defer file.Close()
+
+	for _, d := range data {
+		db := []byte(d)
+		if _, err := file.Write(db); err != nil {
+			fmt.Printf("[ERR] Unable to write data to %s: %v\n", path, err)
+			os.Exit(1)
+
+		}
+	}
+}
+
 func getRawData(file string) [][]string {
 	csvFile, err := os.Open(file)
 	if err != nil {

@@ -41,17 +41,53 @@ func isOnSale(price, salePrice, saleBool string) string {
 }
 
 func cleanCategory(s string) string {
+	at := []string{}
 	slash := strings.Split(s, "/")
-	at := strings.Split(slash[1], "@")
+	if len(slash) >= 2 {
+		at = strings.Split(slash[1], "@")
+	} else {
+		at = slash
+	}
 	return at[0]
 }
 
-func cleanDesc(s string) string {
-	//TODO Clean Description Code Here
-	return s
+func cleanDesc(sku, name, s, path string) string {
+	var newDesc string
+	if strings.Contains(s, "\ufffd") {
+		writeData := []string{}
+		writeData = append(writeData, fmt.Sprintf("%s - %s\n", sku, name))
+		for i, c := range s {
+			if string(c) == "\ufffd" {
+				var begin int
+				var end int
+				if i < 40 {
+					begin = 0
+				} else {
+					begin = i - 40
+				}
+				if i > len(s)-40 {
+					end = len(s)
+				} else {
+					end = i + 40
+				}
+				writeData = append(writeData, fmt.Sprintf("\tBefore: %s\n", s[begin:i]))
+				writeData = append(writeData, fmt.Sprintf("\tAfter:  %s\n\n", s[i:end]))
+			}
+		}
+		writeData = append(writeData, "\n\n")
+		writeToTxt(writeData, path)
+
+		newDesc = strings.Replace(s, "\ufffd", "", -1)
+		newDesc = strings.TrimSpace(newDesc)
+	} else {
+		newDesc = s
+	}
+
+	return newDesc
+
 }
 
-func parseForExport(data1, data2 [][]string) [][]string {
+func parseForExport(data1, data2 [][]string, outPath string) [][]string {
 	exportdata := [][]string{}
 	for i := 0; i < len(data1); i++ {
 		if data1[i][0] != "catalogid" {
@@ -77,8 +113,9 @@ func parseForExport(data1, data2 [][]string) [][]string {
 				}
 			}
 			//TODO Fix Image URL
+			desc := cleanDesc(data1[i][1], data1[i][2], data1[i][21], outPath)
 			exportdata = append(exportdata, []string{data1[i][1], isVariance, variationSKU, variationGroup, data1[i][2], data1[i][7],
-				data1[i][2], cleanDesc(data1[i][21]), price, price, data1[i][5], "", "", data1[i][25], data1[i][26], data1[i][27],
+				data1[i][2], desc, price, price, data1[i][5], "", "", data1[i][25], data1[i][26], data1[i][27],
 				cleanCategory(data1[i][3]), "4", "Default"})
 
 			for _, row := range rows {
@@ -101,7 +138,7 @@ func createLinnCSV(inp1, inp2, out, errOut string) {
 					if true { //TODO make flag for sorting hidden or not
 						wantedData = parseHidden(rawData1, false)
 					}
-					allData := parseForExport(wantedData, rawData2)
+					allData := parseForExport(wantedData, rawData2, errOut)
 					writeToCSV(allData, header, out)
 
 					return

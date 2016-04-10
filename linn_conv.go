@@ -131,22 +131,23 @@ func parseForExport(data1, data2 [][]string, outPath string) [][]string {
 			rows := [][]string{}
 			isVariance := "No"   //MATCH Is Variation Group
 			variationGroup := "" //MATCH Variation Group Name
-			variationSKU := ""   //MATCH Variation SKU
+			// variationSKU := ""   //MATCH Variation SKU
 			variationRange := "" //MATCH Variation Name
 			variationTitle := "" //MATCH Variation Title
 			price := isOnSale(data1[i][8], data1[i][11], data1[i][12])
+			parentSku := checkSku(data1[1][1], data1, data2)
 			for j := 0; j < len(data2); j++ {
 				if data1[i][0] == data2[j][0] {
 					isVariance = "Yes"
 					variationGroup = data1[i][2]
-					variationSKU = data1[i][1]
+					// variationSKU = data1[i][1]
 					variationRange = looseSelVarName(data2[j][4])
 					variationTitle = data2[j][4]
 					varTitle := data2[j][1] + " - " + data2[j][4]
 					varCost := checkVarCost(data1[i][7], data2[j][5])
 					if len(data2[j][3]) > 0 {
 						sku := checkSku(data2[j][3], data1, data2)
-						rows = append(rows, []string{sku, "", data1[i][1], "", varTitle, varCost,
+						rows = append(rows, []string{sku, "", parentSku, "", varTitle, varCost,
 							varTitle, "", price, price, data1[i][5], variationRange, variationTitle, "", "", "", cleanCategory(data1[i][3]),
 							"4", "Default"})
 					}
@@ -157,13 +158,7 @@ func parseForExport(data1, data2 [][]string, outPath string) [][]string {
 			img3 := parseImgUrl(data1[i][27])
 			desc := cleanDesc(data1[i][1], data1[i][2], data1[i][21], outPath)
 			if len(data1[i][1]) > 0 {
-				var sku string
-				if isVariance != "Yes" {
-					sku = checkSku(data1[1][1], data1, data2)
-				} else {
-					sku = ""
-				}
-				exportdata = append(exportdata, []string{sku, isVariance, variationSKU, variationGroup, data1[i][2], data1[i][7],
+				exportdata = append(exportdata, []string{parentSku, isVariance, "", variationGroup, data1[i][2], data1[i][7],
 					data1[i][2], desc, price, price, data1[i][5], "", "", img1, img2, img3,
 					cleanCategory(data1[i][3]), "4", "Default"})
 			}

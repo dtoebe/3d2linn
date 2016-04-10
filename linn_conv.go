@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
+	"path"
+	"strconv"
 	"strings"
 )
 
@@ -87,6 +90,40 @@ func cleanDesc(sku, name, s, path string) string {
 
 }
 
+const (
+	BASE_URL = "https://wholesale.exigsupply.com/assets/images"
+)
+
+func parseImgUrl(url string) string {
+	if len(url) > 0 {
+		split := strings.Split(url, "/")
+		return path.Join(BASE_URL, split[len(split)-1])
+
+	}
+	return ""
+}
+
+func genRand() string {
+	return strconv.Itoa(rand.Intn(10000))
+}
+
+func checkSku(sku string, data1, data2 [][]string) string {
+	var newSku string
+	for _, v := range data1 {
+		if v[1] == sku {
+			newSku = genRand() + sku
+			return checkSku(newSku, data1, data2)
+		}
+	}
+	for _, v := range data2 {
+		if v[3] == sku {
+			newSku = genRand() + sku
+			return checkSku(newSku, data1, data2)
+		}
+	}
+	return sku
+}
+
 func parseForExport(data1, data2 [][]string, outPath string) [][]string {
 	exportdata := [][]string{}
 	for i := 0; i < len(data1); i++ {
@@ -107,17 +144,29 @@ func parseForExport(data1, data2 [][]string, outPath string) [][]string {
 					variationTitle = data2[j][4]
 					varTitle := data2[j][1] + " - " + data2[j][4]
 					varCost := checkVarCost(data1[i][7], data2[j][5])
-					rows = append(rows, []string{data2[j][3], "No", data1[i][1], data1[i][2], varTitle, varCost,
-						varTitle, "", price, price, data1[i][5], variationRange, variationTitle, "", "", "", cleanCategory(data1[i][3]),
-						"4", "Default"})
+					if len(data2[j][3]) > 0 {
+						sku := checkSku(data2[j][3], data1, data2)
+						rows = append(rows, []string{sku, "", data1[i][1], "", varTitle, varCost,
+							varTitle, "", price, price, data1[i][5], variationRange, variationTitle, "", "", "", cleanCategory(data1[i][3]),
+							"4", "Default"})
+					}
 				}
 			}
-			//TODO Fix Image URL
+			img1 := parseImgUrl(data1[i][25])
+			img2 := parseImgUrl(data1[i][26])
+			img3 := parseImgUrl(data1[i][27])
 			desc := cleanDesc(data1[i][1], data1[i][2], data1[i][21], outPath)
-			exportdata = append(exportdata, []string{data1[i][1], isVariance, variationSKU, variationGroup, data1[i][2], data1[i][7],
-				data1[i][2], desc, price, price, data1[i][5], "", "", data1[i][25], data1[i][26], data1[i][27],
-				cleanCategory(data1[i][3]), "4", "Default"})
-
+			if len(data1[i][1]) > 0 {
+				var sku string
+				if isVariance != "Yes" {
+					sku = checkSku(data1[1][1], data1, data2)
+				} else {
+					sku = ""
+				}
+				exportdata = append(exportdata, []string{sku, isVariance, variationSKU, variationGroup, data1[i][2], data1[i][7],
+					data1[i][2], desc, price, price, data1[i][5], "", "", img1, img2, img3,
+					cleanCategory(data1[i][3]), "4", "Default"})
+			}
 			for _, row := range rows {
 				exportdata = append(exportdata, row)
 			}

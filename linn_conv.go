@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"path"
 	"strconv"
 	"strings"
 )
@@ -97,7 +96,7 @@ const (
 func parseImgUrl(url string) string {
 	if len(url) > 0 {
 		split := strings.Split(url, "/")
-		return path.Join(BASE_URL, split[len(split)-1])
+		return BASE_URL + split[len(split)-1]
 
 	}
 	return ""

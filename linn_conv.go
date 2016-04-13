@@ -10,7 +10,7 @@ import (
 
 func getHeader() []string {
 	header := []string{"SKU", "Is Variation Group", "Variation SKU", "Variation Group Name", "Stock", "Title", "Purchase Price",
-		"Listing Title (default)", "Listing Description (default)", "Listing Price (default)", "Retail Price", "Brand",
+		"cost_price", "Listing Title (default)", "Listing Description (default)", "Listing Price (default)", "Retail Price", "Brand",
 		"Range", "Variation Title", "image URL 1", "image URL 2", "Image URL 3", "Category", "Level", "Location"}
 	return header
 }
@@ -90,7 +90,8 @@ func cleanDesc(sku, name, s, path string) string {
 }
 
 const (
-	BASE_URL = "https://store-b8doh.mybigcommerce.com/product_images/import"
+	// BASE_URL = "https://store-b8doh.mybigcommerce.com/product_images/import"
+	BASE_URL = "https://wholesale.ecigsupply.com/assets/images/"
 )
 
 func parseImgUrl(url string) string {
@@ -146,7 +147,7 @@ func parseForExport(data1, data2 [][]string, outPath string) [][]string {
 					varCost := checkVarCost(data1[i][7], data2[j][5])
 					if len(data2[j][3]) > 0 {
 						sku := checkSku(data2[j][3], data1, data2)
-						rows = append(rows, []string{sku, "", parentSku, variationGroup, data2[j][6], varTitle, varCost,
+						rows = append(rows, []string{sku, "", parentSku, variationGroup, data2[j][6], varTitle, varCost, varCost,
 							varTitle, "", price, price, data1[i][5], variationRange, variationTitle, "", "", "", cleanCategory(data1[i][3]),
 							"4", "Default"})
 					}
@@ -162,7 +163,7 @@ func parseForExport(data1, data2 [][]string, outPath string) [][]string {
 					inv = data1[i][13]
 				}
 				exportdata = append(exportdata, []string{parentSku, isVariance, "", variationGroup, inv, data1[i][2], data1[i][7],
-					data1[i][2], desc, price, price, data1[i][5], "", "", img1, img2, img3,
+					data1[i][7], data1[i][2], desc, price, price, data1[i][5], "", "", img1, img2, img3,
 					cleanCategory(data1[i][3]), "4", "Default"})
 			}
 			for _, row := range rows {

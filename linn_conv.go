@@ -11,7 +11,7 @@ import (
 func getHeader() []string {
 	header := []string{"SKU", "Is Variation Group", "Variation SKU", "Variation Group Name", "Stock", "Title", "Purchase Price",
 		"cost_price", "Listing Title (default)", "Listing Description (default)", "Listing Price (default)", "Retail Price", "Brand",
-		"Range", "Variation Title", "image URL 1", "image URL 2", "Image URL 3", "Category", "Level", "Location"}
+		"Range", "Variation Title", "option_id", "image URL 1", "image URL 2", "Image URL 3", "Category", "Level", "Location"}
 	return header
 }
 
@@ -91,13 +91,13 @@ func cleanDesc(sku, name, s, path string) string {
 
 const (
 	// BASE_URL = "https://store-b8doh.mybigcommerce.com/product_images/import"
-	BASE_URL = "https://wholesale.ecigsupply.com/assets/images/"
+	baseURL = "https://wholesale.ecigsupply.com/assets/images/"
 )
 
-func parseImgUrl(url string) string {
+func parseImgURL(url string) string {
 	if len(url) > 0 {
 		split := strings.Split(url, "/")
-		return BASE_URL + split[len(split)-1]
+		return baseURL + split[len(split)-1]
 
 	}
 	return ""
@@ -124,6 +124,14 @@ func checkSku(sku string, data1, data2 [][]string) string {
 	return sku
 }
 
+func setOptionSetID(s string) string {
+	switch strings.ToLower(s) {
+	case "strength":
+		return "66"
+	}
+	return "0"
+}
+
 func parseForExport(data1, data2 [][]string, outPath string) [][]string {
 	exportdata := [][]string{}
 	for i := 0; i < len(data1); i++ {
@@ -134,6 +142,7 @@ func parseForExport(data1, data2 [][]string, outPath string) [][]string {
 			// variationSKU := ""   //MATCH Variation SKU
 			variationRange := "" //MATCH Variation Name
 			variationTitle := "" //MATCH Variation Title
+			// varID := ""
 			price := isOnSale(data1[i][8], data1[i][11], data1[i][12])
 			parentSku := checkSku(data1[1][1], data1, data2)
 			for j := 0; j < len(data2); j++ {
@@ -142,20 +151,21 @@ func parseForExport(data1, data2 [][]string, outPath string) [][]string {
 					variationGroup = data1[i][2]
 					// variationSKU = data1[i][1]
 					variationRange = looseSelVarName(data2[j][4])
+					// varID = setOptionSetID(variationRange)
 					variationTitle = data2[j][4]
 					varTitle := data2[j][1] + " - " + data2[j][4]
 					varCost := checkVarCost(data1[i][7], data2[j][5])
 					if len(data2[j][3]) > 0 {
 						sku := checkSku(data2[j][3], data1, data2)
 						rows = append(rows, []string{sku, "", parentSku, variationGroup, data2[j][6], varTitle, varCost, varCost,
-							varTitle, "", price, price, data1[i][5], variationRange, variationTitle, "", "", "", cleanCategory(data1[i][3]),
+							varTitle, "", price, price, data1[i][5], variationRange, variationTitle, variationRange, "", "", "", cleanCategory(data1[i][3]),
 							"4", "Default"})
 					}
 				}
 			}
-			img1 := parseImgUrl(data1[i][25])
-			img2 := parseImgUrl(data1[i][26])
-			img3 := parseImgUrl(data1[i][27])
+			img1 := parseImgURL(data1[i][25])
+			img2 := parseImgURL(data1[i][26])
+			img3 := parseImgURL(data1[i][27])
 			desc := cleanDesc(data1[i][1], data1[i][2], data1[i][21], outPath)
 			inv := ""
 			if len(data1[i][1]) > 0 {
@@ -163,7 +173,7 @@ func parseForExport(data1, data2 [][]string, outPath string) [][]string {
 					inv = data1[i][13]
 				}
 				exportdata = append(exportdata, []string{parentSku, isVariance, "", variationGroup, inv, data1[i][2], data1[i][7],
-					data1[i][7], data1[i][2], desc, price, price, data1[i][5], "", "", img1, img2, img3,
+					data1[i][7], data1[i][2], desc, price, price, data1[i][5], "", "", "", img1, img2, img3,
 					cleanCategory(data1[i][3]), "4", "Default"})
 			}
 			for _, row := range rows {
